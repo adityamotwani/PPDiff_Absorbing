@@ -330,9 +330,6 @@ class TargetProteinBinderDataset(FairseqDataset):
 
 
 class AntigenAntibodyDataset(FairseqDataset):
-    """Takes a text file as input and binarizes it in memory at instantiation.
-    Original lines are also kept in memory"""
-
     def __init__(self, path, dictionary, append_eos=True, reverse_order=False, split="train", protein=None):
         self.seqs = []
         self.atoms = []
@@ -341,6 +338,8 @@ class AntigenAntibodyDataset(FairseqDataset):
         self.sizes = []
         self.centers = []
         self.lengths = []
+        self.antigen_lens = []
+        self.heavy_chain_lens = []
         self.append_eos = append_eos
         self.reverse_order = reverse_order
         self.atom_dict = {"N": 0, "CA": 1, "C": 2, "O": 3}
@@ -393,6 +392,10 @@ class AntigenAntibodyDataset(FairseqDataset):
             coor = (coor - np.reshape(center, (1, 3))) / length 
             self.coors.append(torch.tensor(coor))  # [center, target, binder, center]
             self.lengths.append(length)
+        
+        for antigen_len, heavy_chain_len in zip(data[protein][split]["antigen_length"], data[protein][split]["heavy_chain_len"]):
+            self.antigen_lens.append(antigen_len)
+            self.heavy_chain_lens.append(heavy_chain_len)
 
     def check_index(self, i):
         if i < 0 or i >= self.size:
@@ -401,7 +404,7 @@ class AntigenAntibodyDataset(FairseqDataset):
     @lru_cache(maxsize=8)
     def __getitem__(self, i):
         self.check_index(i)
-        return (self.seqs[i], self.atoms[i], self.coors[i], self.centers[i], self.target[i], self.lengths[i])
+        return (self.seqs[i], self.atoms[i], self.coors[i], self.centers[i], self.target[i], self.antigen_lens[i], self.heavy_chain_lens[i])
 
     def __len__(self):
         return self.size
@@ -415,5 +418,3 @@ class AntigenAntibodyDataset(FairseqDataset):
     @staticmethod
     def exists(path):
         return PathManager.exists(path)
-
-
