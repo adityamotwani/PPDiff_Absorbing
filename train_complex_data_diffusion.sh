@@ -36,7 +36,7 @@ python3 fairseq_cli/train.py ${data_path} \
 --stop-min-lr '1e-12' --warmup-updates 4000 \
 --warmup-init-lr '1e-6' \
 --clip-norm 0.0001 \
---ddp-backend legacy_ddp \
+--ddp-backend no_c10d \
 --log-format 'simple' --log-interval 10 \
 --max-tokens 1024 \
 --update-freq 1 \

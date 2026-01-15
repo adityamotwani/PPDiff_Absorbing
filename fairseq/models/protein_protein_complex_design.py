@@ -643,9 +643,13 @@ class ProteinProteinComplexdiffusionModel(TransformerModel):
         log_alpha_t = extract(self.log_alphas_r, t)
         log_1_min_alpha_t = extract(self.log_one_minus_alphas_r, t)
 
+        # Making one-hot log probability for [mask] token
+        log_mask_onehot = torch.full_like(log_rt_1, float('-inf'))
+        log_mask_onehot[..., self.mask_index] = 0.0
+
         log_probs = log_add_exp(
             log_rt_1+log_alpha_t,
-            log_1_min_alpha_t-np.log(self.num_classes)
+            log_1_min_alpha_t + log_mask_onehot
         )
         return log_probs
     
@@ -654,9 +658,13 @@ class ProteinProteinComplexdiffusionModel(TransformerModel):
         log_cumprod_alpha_t = extract(self.log_alphas_cumprod_r, t)
         log_1_min_cumprod_alpha = extract(self.log_one_minus_alphas_cumprod_r, t)
 
+        # Making one-hot log probability for [mask] token
+        log_mask_onehot = torch.full_like(log_r0, float('-inf'))
+        log_mask_onehot[..., self.mask_index] = 0.0
+
         log_probs = log_add_exp(
             log_r0 + log_cumprod_alpha_t,  # B, L, C
-            log_1_min_cumprod_alpha - np.log(self.num_classes)
+            log_1_min_cumprod_alpha + log_mask_onehot
         )
         return log_probs
     

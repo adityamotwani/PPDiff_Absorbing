@@ -24,7 +24,8 @@ def hydra_init(cfg_name="config") -> None:
             cs.store(name=k, node=v)
         except BaseException:
             logger.error(f"{k} - {v}")
-            raise
+            pass
+            # raise
 
 
 def add_defaults(cfg: DictConfig) -> None:
